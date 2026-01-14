@@ -1,10 +1,24 @@
 "use client";
 "use no memo";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import ParentWrapper from "@/app/components/without-compiler/ParentWrapper";
 import Kid from "@/app/components/without-compiler/Kid";
 import Kid2 from "@/app/components/without-compiler/Kid2";
-import { AppContextProvider, useAppContext } from "@/app/components/without-compiler/AppContext";
+import {
+  AppContextProvider,
+  useAppContext,
+} from "@/app/components/without-compiler/AppContext";
+import AsyncChild from "./AsyncChild";
+import AsyncChildLoading from "./AsyncChildLoading";
 
 function ParentContent() {
   "use no memo";
@@ -16,14 +30,22 @@ function ParentContent() {
   const ref = useRef<HTMLDivElement>(null);
 
   const reducer = (state: number, action: { type: string }) => {
-    console.log("🟦 Parent: reducer ran, state:", state, "action:", action.type);
+    console.log(
+      "🟦 Parent: reducer ran, state:",
+      state,
+      "action:",
+      action.type
+    );
     if (action.type === "increment") {
       return state + 1;
     }
     return state;
   };
   const init = (initialArg: number) => {
-    console.log("🟦 Parent: useReducer init function ran, initialArg:", initialArg);
+    console.log(
+      "🟦 Parent: useReducer init function ran, initialArg:",
+      initialArg
+    );
     return initialArg;
   };
   const [reducerState, dispatch] = useReducer(reducer, 0, init);
@@ -70,22 +92,38 @@ function ParentContent() {
   }, []);
 
   useLayoutEffect(() => {
-    console.log("🟦 Parent: useLayoutEffect (count changed) ran, count:", count);
+    console.log(
+      "🟦 Parent: useLayoutEffect (count changed) ran, count:",
+      count
+    );
   }, [count]);
 
   useEffect(() => {
-    console.log("🟦 Parent: useEffect (contextValue changed) ran, contextValue:", contextValue);
+    console.log(
+      "🟦 Parent: useEffect (contextValue changed) ran, contextValue:",
+      contextValue
+    );
   }, [contextValue]);
 
   console.log("🟦 Parent: render");
 
   return (
-    <div ref={(el) => { console.log("🟦 Parent: ref callback ran, element:", el); ref.current = el; }} className="p-4 border-2 border-blue-500 rounded-lg bg-blue-50">
+    <div
+      ref={(el) => {
+        console.log("🟦 Parent: ref callback ran, element:", el);
+        ref.current = el;
+      }}
+      className="p-4 border-2 border-blue-500 rounded-lg bg-blue-50"
+    >
       <h2 className="text-xl font-bold text-blue-700 mb-2">Parent</h2>
       <p className="text-sm text-blue-600 mb-2">Count: {count}</p>
       <p className="text-sm text-blue-600 mb-2">Memoized: {memoizedValue}</p>
-      <p className="text-sm text-blue-600 mb-2">Reducer State: {reducerState}</p>
-      <p className="text-sm text-blue-600 mb-2">Context Value: {contextValue}</p>
+      <p className="text-sm text-blue-600 mb-2">
+        Reducer State: {reducerState}
+      </p>
+      <p className="text-sm text-blue-600 mb-2">
+        Context Value: {contextValue}
+      </p>
       <div className="flex gap-2 mb-2">
         <button
           onClick={handleIncrementCount}
@@ -94,13 +132,19 @@ function ParentContent() {
           Increment Count
         </button>
         <button
-          onClick={() => { console.log("🟦 Parent: onClick (Increment Reducer) triggered"); dispatch({ type: "increment" }); }}
+          onClick={() => {
+            console.log("🟦 Parent: onClick (Increment Reducer) triggered");
+            dispatch({ type: "increment" });
+          }}
           className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
           Increment Reducer
         </button>
         <button
-          onClick={() => { console.log("🟦 Parent: onClick (Increment Context) triggered"); setContextValue(contextValue + 1); }}
+          onClick={() => {
+            console.log("🟦 Parent: onClick (Increment Context) triggered");
+            setContextValue(contextValue + 1);
+          }}
           className="px-3 py-1 bg-blue-700 text-white rounded hover:bg-blue-800"
         >
           Increment Context
@@ -109,6 +153,10 @@ function ParentContent() {
       <div className="mt-4">
         <ParentWrapper>
           <Kid />
+          <Suspense fallback={<AsyncChildLoading />}>
+            <AsyncChild />
+          </Suspense>
+
           <Kid2 />
         </ParentWrapper>
       </div>
@@ -124,4 +172,3 @@ export default function Parent() {
     </AppContextProvider>
   );
 }
-
