@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useAppContextWithCompiler } from "@/app/components/compiler/AppContextWithCompiler";
 
 export default function Kid2WithCompiler() {
@@ -28,6 +28,12 @@ export default function Kid2WithCompiler() {
     console.log("🟧 Kid2 (Compiler): useMemo ran, count:", count);
     return count * 2;
   }, [count]);
+
+  const handleIncrementCount = useCallback(() => {
+    console.log("🟧 Kid2 (Compiler): useCallback (handleIncrementCount) ran");
+    console.log("🟧 Kid2 (Compiler): onClick (Increment Count) triggered");
+    setCount((prev) => prev + 1);
+  }, []);
 
   const { contextValue, setContextValue } = useAppContextWithCompiler();
   console.log("🟧 Kid2 (Compiler): useContext ran, contextValue:", contextValue);
@@ -77,7 +83,7 @@ export default function Kid2WithCompiler() {
       <p className="text-sm text-orange-600 mb-2">Context Value: {contextValue}</p>
       <div className="flex gap-2 mb-2">
         <button
-          onClick={() => { console.log("🟧 Kid2 (Compiler): onClick (Increment Count) triggered"); setCount(count + 1); }}
+          onClick={handleIncrementCount}
           className="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600"
         >
           Increment Count

@@ -66,6 +66,7 @@ When a component is marked with `"use client"`, here's what happens:
 - ✅ **Render-phase hooks execute** on the server (to generate initial HTML)
 - ✅ **Hook initializers run** (e.g., `useState(() => ...)`, `useReducer(..., init)`)
 - ✅ **Hook logic executes** (e.g., `useMemo`, `useReducer`, `useContext`, `useRef`)
+- ✅ **`useCallback` returns a function** on the server (memoized function is created during render)
 - ❌ **Effects DO NOT run** (`useEffect`, `useLayoutEffect` - these are client-only)
 
 #### On the Client (Hydration):

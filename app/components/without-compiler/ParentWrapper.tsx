@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
 
 interface ParentWrapperProps {
   children: React.ReactNode;
@@ -33,6 +33,12 @@ export default function ParentWrapper({ children }: ParentWrapperProps) {
     console.log("🟨 ParentWrapper: useMemo ran, count:", count);
     return count * 2;
   }, [count]);
+
+  const handleIncrementCount = useCallback(() => {
+    console.log("🟨 ParentWrapper: useCallback (handleIncrementCount) ran");
+    console.log("🟨 ParentWrapper: onClick (Increment Count) triggered");
+    setCount((prev) => prev + 1);
+  }, []);
 
   useEffect(() => {
     console.log("🟨 ParentWrapper: useEffect ran");
@@ -74,7 +80,7 @@ export default function ParentWrapper({ children }: ParentWrapperProps) {
       <p className="text-sm text-yellow-600 mb-2">Reducer State: {reducerState}</p>
       <div className="flex gap-2 mb-2">
         <button
-          onClick={() => { console.log("🟨 ParentWrapper: onClick (Increment Count) triggered"); setCount(count + 1); }}
+          onClick={handleIncrementCount}
           className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
         >
           Increment Count

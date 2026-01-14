@@ -1,7 +1,7 @@
 "use client";
 "use no memo";
 
-import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useAppContext } from "@/app/components/without-compiler/AppContext";
 
 export default function Kid2() {
@@ -31,6 +31,12 @@ export default function Kid2() {
     console.log("🟧 Kid2: useMemo ran, count:", count);
     return count * 2;
   }, [count]);
+
+  const handleIncrementCount = useCallback(() => {
+    console.log("🟧 Kid2: useCallback (handleIncrementCount) ran");
+    console.log("🟧 Kid2: onClick (Increment Count) triggered");
+    setCount((prev) => prev + 1);
+  }, []);
 
   const { contextValue, setContextValue } = useAppContext();
   console.log("🟧 Kid2: useContext ran, contextValue:", contextValue);
@@ -80,7 +86,7 @@ export default function Kid2() {
       <p className="text-sm text-orange-600 mb-2">Context Value: {contextValue}</p>
       <div className="flex gap-2 mb-2">
         <button
-          onClick={() => { console.log("🟧 Kid2: onClick (Increment Count) triggered"); setCount(count + 1); }}
+          onClick={handleIncrementCount}
           className="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600"
         >
           Increment Count

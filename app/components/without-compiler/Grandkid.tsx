@@ -1,6 +1,6 @@
 "use client";
 "use no memo";
-import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useAppContext } from "@/app/components/without-compiler/AppContext";
 
 export interface GrandkidHandle {
@@ -42,6 +42,12 @@ const Grandkid = forwardRef<GrandkidHandle>((props, ref) => {
     return count * 2;
   }, [count]);
 
+  const handleIncrementCount = useCallback(() => {
+    console.log("🟪 Grandkid: useCallback (handleIncrementCount) ran");
+    console.log("🟪 Grandkid: onClick (Increment Count) triggered");
+    setCount((prev) => prev + 1);
+  }, []);
+  
   const { contextValue } = useAppContext();
   console.log("🟪 Grandkid: useContext ran, contextValue:", contextValue);
 
@@ -90,7 +96,7 @@ const Grandkid = forwardRef<GrandkidHandle>((props, ref) => {
       <p className="text-xs text-purple-600 mb-2">Context Value: {contextValue}</p>
       <div className="flex gap-2 mb-2">
         <button
-          onClick={() => { console.log("🟪 Grandkid: onClick (Increment Count) triggered"); setCount(count + 1); }}
+          onClick={handleIncrementCount}
           className="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-sm"
         >
           Increment Count

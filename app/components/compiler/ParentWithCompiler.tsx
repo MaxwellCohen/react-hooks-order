@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
 import ParentWrapperWithCompiler from "@/app/components/compiler/ParentWrapperWithCompiler";
 import KidWithCompiler from "@/app/components/compiler/KidWithCompiler";
 import Kid2WithCompiler from "@/app/components/compiler/Kid2WithCompiler";
@@ -32,6 +32,12 @@ function ParentContentWithCompiler() {
     console.log("🟦 Parent (Compiler): useMemo ran, count:", count);
     return count * 2;
   }, [count]);
+
+  const handleIncrementCount = useCallback(() => {
+    console.log("🟦 Parent (Compiler): useCallback (handleIncrementCount) ran");
+    console.log("🟦 Parent (Compiler): onClick (Increment Count) triggered");
+    setCount((prev) => prev + 1);
+  }, []);
 
   const { contextValue, setContextValue } = useAppContextWithCompiler();
   console.log("🟦 Parent (Compiler): useContext ran, contextValue:", contextValue);
@@ -81,7 +87,7 @@ function ParentContentWithCompiler() {
       <p className="text-sm text-blue-600 mb-2">Context Value: {contextValue}</p>
       <div className="flex gap-2 mb-2">
         <button
-          onClick={() => { console.log("🟦 Parent (Compiler): onClick (Increment Count) triggered"); setCount(count + 1); }}
+          onClick={handleIncrementCount}
           className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Increment Count
