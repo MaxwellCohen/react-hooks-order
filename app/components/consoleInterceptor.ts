@@ -11,13 +11,18 @@ export interface LogEntry {
   formatted: string;
 }
 
-type LogListener = (entry: LogEntry) => void;
-
 // Global store for logs
 const logs: LogEntry[] = [];
 let logIdCounter = 0;
-let isPaused = false;
-const listeners = new Set<LogListener>();
+const listeners = new Set<() => void>();
+
+// Cached empty array for server snapshot to avoid creating new arrays
+const EMPTY_LOGS: LogEntry[] = [];
+
+// Notify all listeners of changes
+function notifyListeners() {
+  listeners.forEach((listener) => listener());
+}
 
 // Format log arguments to string
 function formatLogArgs(args: unknown[]): string {
@@ -50,9 +55,6 @@ function interceptConsole(level: LogLevel, originalMethod: typeof console.log) {
     // Call original console method
     originalMethod(...args);
 
-    // Don't capture if paused
-    if (isPaused) return;
-
     // Create log entry
     const entry: LogEntry = {
       id: logIdCounter++,
@@ -66,7 +68,7 @@ function interceptConsole(level: LogLevel, originalMethod: typeof console.log) {
     logs.push(entry);
 
     // Notify all listeners
-    listeners.forEach((listener) => listener(entry));
+    notifyListeners();
   };
 }
 
@@ -79,22 +81,21 @@ if (typeof window !== "undefined") {
   console.debug = interceptConsole("debug", originalConsole.debug);
 }
 
-// Public API
+// Public API for useSyncExternalStore
 export const consoleInterceptor = {
   getLogs: () => [...logs],
   clearLogs: () => {
     logs.length = 0;
     logIdCounter = 0;
+    notifyListeners();
   },
-  subscribe: (listener: LogListener) => {
-    listeners.add(listener);
+  subscribe: (onStoreChange: () => void) => {
+    listeners.add(onStoreChange);
     return () => {
-      listeners.delete(listener);
+      listeners.delete(onStoreChange);
     };
   },
-  setPaused: (paused: boolean) => {
-    isPaused = paused;
-  },
-  isPaused: () => isPaused,
+  getSnapshot: () => logs,
+  getServerSnapshot: () => EMPTY_LOGS,
 };
 

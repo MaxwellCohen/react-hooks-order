@@ -1,13 +1,16 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { consoleInterceptor, type LogEntry } from "./consoleInterceptor";
 
 type LogLevel = LogEntry["level"];
 
 export default function ConsoleLogViewer() {
-  const [logs, setLogs] = useState<LogEntry[]>(() => consoleInterceptor.getLogs());
-  const [isOpen, setIsOpen] = useState(true);
-  const [isPaused, setIsPaused] = useState(() => consoleInterceptor.isPaused());
+  const logs = useSyncExternalStore(
+    consoleInterceptor.subscribe,
+    consoleInterceptor.getSnapshot,
+    consoleInterceptor.getServerSnapshot
+  );
+  const [isOpen, setIsOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [enabledLevels, setEnabledLevels] = useState<Set<LogLevel>>(
     new Set(["log", "warn", "error", "info", "debug"])
@@ -15,15 +18,6 @@ export default function ConsoleLogViewer() {
   const [showFilters, setShowFilters] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const shouldAutoScrollRef = useRef(true);
-
-  // Subscribe to new logs
-  useEffect(() => {
-    const unsubscribe = consoleInterceptor.subscribe((entry) => {
-      setLogs((prev) => [...prev, entry]);
-    });
-
-    return unsubscribe;
-  }, []);
 
   // Filter logs based on search text and enabled levels
   const filteredLogs = logs.filter((log) => {
@@ -64,7 +58,6 @@ export default function ConsoleLogViewer() {
 
   const clearLogs = () => {
     consoleInterceptor.clearLogs();
-    setLogs([]);
   };
 
   const getLogLevelColor = (level: LogEntry["level"]) => {
@@ -132,15 +125,15 @@ export default function ConsoleLogViewer() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 z-50 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition-colors"
+        className="fixed bottom-4 left-4 z-50 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition-colors"
       >
-        Show Console ({logs.length})
+        Show Console
       </button>
     );
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-[600px] max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg shadow-2xl flex flex-col max-h-[70vh]">
+    <div className="fixed bottom-4 left-4 z-50 w-150 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg shadow-2xl flex flex-col max-h-[70vh]">
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
         <div className="flex items-center gap-2">
@@ -161,20 +154,6 @@ export default function ConsoleLogViewer() {
             } hover:opacity-80 transition-opacity`}
           >
             Filter
-          </button>
-          <button
-            onClick={() => {
-              const newPaused = !isPaused;
-              consoleInterceptor.setPaused(newPaused);
-              setIsPaused(newPaused);
-            }}
-            className={`px-2 py-1 text-xs rounded ${
-              isPaused
-                ? "bg-yellow-500 text-white"
-                : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-            } hover:opacity-80 transition-opacity`}
-          >
-            {isPaused ? "Resume" : "Pause"}
           </button>
           <button
             onClick={clearLogs}
@@ -281,17 +260,17 @@ export default function ConsoleLogViewer() {
               key={log.id}
               className={`p-2 rounded border ${getLogLevelBg(
                 log.level
-              )} break-words`}
+              )} wrap-break-word`}
             >
               <div className="flex items-start gap-2">
                 <span
-                  className={`font-semibold text-[10px] uppercase flex-shrink-0 ${getLogLevelColor(
+                  className={`font-semibold text-[10px] uppercase shrink-0 ${getLogLevelColor(
                     log.level
                   )}`}
                 >
                   {log.level}
                 </span>
-                <span className="text-gray-500 dark:text-gray-400 text-[10px] flex-shrink-0">
+                <span className="text-gray-500 dark:text-gray-400 text-[10px] shrink-0">
                   {formatTime(log.timestamp)}
                 </span>
               </div>
