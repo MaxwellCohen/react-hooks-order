@@ -13,6 +13,22 @@ The app includes two versions:
 - **Without React Compiler**: Standard React behavior
 - **With React Compiler**: React Compiler optimized behavior
 
+### Console Log Viewer
+
+The app features a built-in **Console Log Viewer** that intercepts and displays all console logs in a convenient UI panel. This makes it easy to observe hook execution order without constantly switching to the browser's developer console.
+
+**Features:**
+- 📊 Real-time log capture and display
+- 🔍 Search and filter logs by text
+- 🎚️ Filter by log level (log, warn, error, info, debug)
+- ⏱️ Timestamp for each log entry
+- 🎨 Color-coded log levels
+- 📜 Auto-scroll to latest logs (pauses when you scroll up)
+- 🧹 Clear logs button
+- 🌓 Dark mode support
+
+Click the **"Show Console"** button in the bottom-left corner to open the log viewer.
+
 ## Server vs Client Execution
 
 This is a Next.js App Router application, which means there's a clear distinction between what runs on the server and what runs on the client.
@@ -52,9 +68,13 @@ All components that use hooks are marked with `"use client"` and run in the **br
   - `Kid.tsx` - Child component with hooks
   - `Kid2.tsx` - Sibling component with hooks
   - `Grandkid.tsx` - Grandchild component with hooks
+  - `AsyncChildDynamic.tsx` - Async component using the `use` hook
 
 - **`app/components/compiler/*`**: All components with compiler
   - Same structure as above, but with React Compiler optimizations
+
+- **`app/components/ConsoleLogViewer.tsx`**: Interactive console log viewer UI
+- **`app/components/consoleInterceptor.ts`**: Console interception and log storage
 
 ### What Runs on Server vs Client for "use client" Components
 
@@ -150,6 +170,7 @@ sequenceDiagram
    - In development, you'll see server-side hook execution in terminal/server logs
    - In the browser console, you'll see client-side hook execution (hydration + subsequent renders)
    - The first render you see in the browser console is the hydration render (hooks execute again to match server output)
+   - **Console Log Viewer**: All client-side console logs are automatically captured and displayed in the built-in log viewer UI (bottom-left corner)
 
 ### Why This Matters
 
@@ -475,6 +496,9 @@ This app demonstrates the following React hooks:
 - **`useEffect`**: Side effects (async, after paint)
 - **`useLayoutEffect`**: Synchronous side effects (before paint)
 - **`useImperativeHandle`**: Exposing imperative methods via refs (with `forwardRef`)
+- **`use`**: Reading values from promises and context (React 19)
+- **`useCallback`**: Memoized callback functions
+- **`useSyncExternalStore`**: Subscribing to external stores (used in ConsoleLogViewer)
 
 ## Usage
 
@@ -482,37 +506,47 @@ This app demonstrates the following React hooks:
    - **Without React Compiler**: Standard React behavior
    - **With React Compiler**: React Compiler optimized behavior
 
-2. Open your browser's developer console to see the hook execution order
+2. **View Console Logs**:
+   - Click the **"Show Console"** button in the bottom-left corner to open the built-in Console Log Viewer
+   - Alternatively, open your browser's developer console to see logs there as well
+   - The Console Log Viewer provides filtering, search, and better visualization of hook execution
 
 3. Interact with the buttons to trigger state changes and observe:
    - Hook execution order during re-renders
    - Cleanup function execution
    - Effect dependency tracking
+   - How async components using the `use` hook behave
 
 ## Project Structure
 
 ```
 app/
 ├── components/
-│   ├── compiler/          # Components with React Compiler
+│   ├── compiler/                    # Components with React Compiler
 │   │   ├── AppContextWithCompiler.tsx
 │   │   ├── ParentWithCompiler.tsx
 │   │   ├── ParentWrapperWithCompiler.tsx
 │   │   ├── KidWithCompiler.tsx
 │   │   ├── Kid2WithCompiler.tsx
-│   │   └── GrandkidWithCompiler.tsx
-│   └── without-compiler/  # Components without React Compiler
-│       ├── AppContext.tsx
-│       ├── Parent.tsx
-│       ├── ParentWrapper.tsx
-│       ├── Kid.tsx
-│       ├── Kid2.tsx
-│       └── Grandkid.tsx
+│   │   ├── GrandkidWithCompiler.tsx
+│   │   └── AsyncChildDynamicWithCompiler.tsx
+│   ├── without-compiler/            # Components without React Compiler
+│   │   ├── AppContext.tsx
+│   │   ├── Parent.tsx
+│   │   ├── ParentWrapper.tsx
+│   │   ├── Kid.tsx
+│   │   ├── Kid2.tsx
+│   │   ├── Grandkid.tsx
+│   │   └── AsyncChildDynamic.tsx
+│   ├── ConsoleLogViewer.tsx         # Interactive console log viewer UI
+│   ├── consoleInterceptor.ts        # Console interception and log storage
+│   └── ConsoleInterceptorInit.tsx   # Console interceptor initialization
 ├── with-compiler/
 │   └── page.tsx
 ├── without-compiler/
 │   └── page.tsx
-└── page.tsx               # Home page
+├── layout.tsx                       # Root layout (includes ConsoleLogViewer)
+└── page.tsx                         # Home page
 ```
 
 ## Technologies
