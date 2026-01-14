@@ -143,9 +143,22 @@ export default function Kid2WithCompiler() {
           onClick={() => { 
             console.log("🟧 Kid2 (Compiler): onClick (Increment Reducer) triggered"); 
             const newValue = reducerState + 1;
-            addOptimistic(newValue);
-            console.log("🟧 Kid2 (Compiler): addOptimistic called with:", newValue);
-            dispatch({ type: "increment" }); 
+            startTransition(async () => {
+              console.log("🟧 Kid2 (Compiler): startTransition async callback ran");
+              addOptimistic(newValue);
+              console.log("🟧 Kid2 (Compiler): addOptimistic called with:", newValue);
+              const delayPromise = new Promise<void>((resolve) => {
+                console.log("🟧 Kid2 (Compiler): Promise created inside startTransition, setTimeout scheduled");
+                setTimeout(() => {
+                  console.log("🟧 Kid2 (Compiler): Promise resolved after 1 second");
+                  resolve();
+                }, 1000);
+              });
+              await delayPromise;
+              addOptimistic(newValue);
+              console.log("🟧 Kid2 (Compiler): addOptimistic called with:", newValue);
+              dispatch({ type: "increment" }); 
+            });
           }}
           className="px-3 py-1 bg-orange-600 text-white rounded hover:bg-orange-700"
         >
