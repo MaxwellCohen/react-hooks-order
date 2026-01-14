@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import ParentWithCompiler from "@/app/components/compiler/ParentWithCompiler";
 import ConsoleLogViewer from "@/app/components/ConsoleLogViewer";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "With React Compiler",
+  description:
+    "Visualize React hooks execution order in a demo with React Compiler enabled, comparing behavior to the non-compiler version.",
+};
 
 export default function WithCompilerPage() {
   return (
@@ -26,4 +33,3 @@ export default function WithCompilerPage() {
     </div>
   );
 }
-

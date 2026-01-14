@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Home",
+  description:
+    "Choose a demo to visualize React hooks execution order, with or without React Compiler.",
+};
 
 export default function Home() {
   return (

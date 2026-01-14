@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import Parent from "@/app/components/without-compiler/Parent";
 import ConsoleLogViewer from "@/app/components/ConsoleLogViewer";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Without React Compiler",
+  description:
+    "Visualize React hooks execution order in a demo without React Compiler, with detailed console logging.",
+};
 
 export default function WithoutCompilerPage() {
   "use no memo";
@@ -27,4 +34,3 @@ export default function WithoutCompilerPage() {
     </div>
   );
 }
-
