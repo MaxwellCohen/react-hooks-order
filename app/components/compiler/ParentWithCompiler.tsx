@@ -17,8 +17,14 @@ import {
   AppContextProviderWithCompiler,
   useAppContextWithCompiler,
 } from "@/app/components/compiler/AppContextWithCompiler";
+import dynamic from "next/dynamic";
 import AsyncChildWithCompiler from "./AsyncChildWithCompiler";
 import AsyncChildLoadingWithCompiler from "./AsyncChildLoadingWithCompiler";
+
+const AsyncChildDynamicWithCompiler = dynamic(
+  () => import("./AsyncChildDynamicWithCompiler"),
+  { ssr: false }
+);
 
 function ParentContentWithCompiler() {
   const [count, setCount] = useState(() => {
@@ -167,6 +173,7 @@ function ParentContentWithCompiler() {
           <Suspense fallback={<AsyncChildLoadingWithCompiler />}>
             <AsyncChildWithCompiler />
           </Suspense>
+          <AsyncChildDynamicWithCompiler />
           <Kid2WithCompiler />
         </ParentWrapperWithCompiler>
       </div>

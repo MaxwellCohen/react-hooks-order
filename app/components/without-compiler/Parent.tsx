@@ -17,8 +17,14 @@ import {
   AppContextProvider,
   useAppContext,
 } from "@/app/components/without-compiler/AppContext";
+import dynamic from "next/dynamic";
 import AsyncChild from "./AsyncChild";
 import AsyncChildLoading from "./AsyncChildLoading";
+
+const AsyncChildDynamic = dynamic(
+  () => import("./AsyncChildDynamic"),
+  { ssr: false }
+);
 
 function ParentContent() {
   "use no memo";
@@ -156,7 +162,7 @@ function ParentContent() {
           <Suspense fallback={<AsyncChildLoading />}>
             <AsyncChild />
           </Suspense>
-
+          <AsyncChildDynamic />
           <Kid2 />
         </ParentWrapper>
       </div>

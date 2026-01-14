@@ -47,7 +47,7 @@ const GrandkidWithCompiler = forwardRef<GrandkidHandleWithCompiler>((props, ref)
     setCount((prev) => prev + 1);
   }, []);
 
-  const { contextValue } = useAppContextWithCompiler();
+  const { contextValue, setContextValue } = useAppContextWithCompiler();
   console.log("🟪 Grandkid (Compiler): useContext ran, contextValue:", contextValue);
 
   useEffect(() => {
@@ -105,6 +105,12 @@ const GrandkidWithCompiler = forwardRef<GrandkidHandleWithCompiler>((props, ref)
           className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm"
         >
           Increment Reducer
+        </button>
+        <button
+          onClick={() => { console.log("🟪 Grandkid (Compiler): onClick (Increment Context) triggered"); setContextValue(contextValue + 1); }}
+          className="px-3 py-1 bg-purple-700 text-white rounded hover:bg-purple-800 text-sm"
+        >
+          Increment Context
         </button>
       </div>
     </div>
