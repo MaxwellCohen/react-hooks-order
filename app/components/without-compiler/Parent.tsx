@@ -14,7 +14,6 @@ function ParentContent() {
   });
 
   const ref = useRef<HTMLDivElement>(null);
-  console.log("🟦 Parent: useRef ran");
 
   const reducer = (state: number, action: { type: string }) => {
     console.log("🟦 Parent: reducer ran, state:", state, "action:", action.type);
@@ -75,7 +74,7 @@ function ParentContent() {
   console.log("🟦 Parent: render");
 
   return (
-    <div ref={ref} className="p-4 border-2 border-blue-500 rounded-lg bg-blue-50">
+    <div ref={(el) => { console.log("🟦 Parent: ref callback ran, element:", el); ref.current = el; }} className="p-4 border-2 border-blue-500 rounded-lg bg-blue-50">
       <h2 className="text-xl font-bold text-blue-700 mb-2">Parent</h2>
       <p className="text-sm text-blue-600 mb-2">Count: {count}</p>
       <p className="text-sm text-blue-600 mb-2">Memoized: {memoizedValue}</p>
@@ -83,19 +82,19 @@ function ParentContent() {
       <p className="text-sm text-blue-600 mb-2">Context Value: {contextValue}</p>
       <div className="flex gap-2 mb-2">
         <button
-          onClick={() => setCount(count + 1)}
+          onClick={() => { console.log("🟦 Parent: onClick (Increment Count) triggered"); setCount(count + 1); }}
           className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Increment Count
         </button>
         <button
-          onClick={() => dispatch({ type: "increment" })}
+          onClick={() => { console.log("🟦 Parent: onClick (Increment Reducer) triggered"); dispatch({ type: "increment" }); }}
           className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
           Increment Reducer
         </button>
         <button
-          onClick={() => setContextValue(contextValue + 1)}
+          onClick={() => { console.log("🟦 Parent: onClick (Increment Context) triggered"); setContextValue(contextValue + 1); }}
           className="px-3 py-1 bg-blue-700 text-white rounded hover:bg-blue-800"
         >
           Increment Context

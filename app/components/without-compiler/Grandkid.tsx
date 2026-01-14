@@ -15,7 +15,6 @@ const Grandkid = forwardRef<GrandkidHandle>((props, ref) => {
   });
 
   const internalRef = useRef<HTMLDivElement>(null);
-  console.log("🟪 Grandkid: useRef ran");
 
   useImperativeHandle(ref, () => {
     console.log("🟪 Grandkid: useImperativeHandle ran");
@@ -83,7 +82,7 @@ const Grandkid = forwardRef<GrandkidHandle>((props, ref) => {
   console.log("🟪 Grandkid: render");
 
   return (
-    <div ref={internalRef} className="p-4 border-2 border-purple-500 rounded-lg bg-purple-50">
+    <div ref={(el) => { console.log("🟪 Grandkid: ref callback ran, element:", el); internalRef.current = el; }} className="p-4 border-2 border-purple-500 rounded-lg bg-purple-50">
       <h5 className="text-sm font-bold text-purple-700 mb-2">Grandkid</h5>
       <p className="text-xs text-purple-600 mb-2">Count: {count}</p>
       <p className="text-xs text-purple-600 mb-2">Memoized: {memoizedValue}</p>
@@ -91,13 +90,13 @@ const Grandkid = forwardRef<GrandkidHandle>((props, ref) => {
       <p className="text-xs text-purple-600 mb-2">Context Value: {contextValue}</p>
       <div className="flex gap-2 mb-2">
         <button
-          onClick={() => setCount(count + 1)}
+          onClick={() => { console.log("🟪 Grandkid: onClick (Increment Count) triggered"); setCount(count + 1); }}
           className="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 text-sm"
         >
           Increment Count
         </button>
         <button
-          onClick={() => dispatch({ type: "increment" })}
+          onClick={() => { console.log("🟪 Grandkid: onClick (Increment Reducer) triggered"); dispatch({ type: "increment" }); }}
           className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm"
         >
           Increment Reducer

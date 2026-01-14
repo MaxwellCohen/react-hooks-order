@@ -14,7 +14,6 @@ export default function ParentWrapper({ children }: ParentWrapperProps) {
   });
 
   const ref = useRef<HTMLDivElement>(null);
-  console.log("🟨 ParentWrapper: useRef ran");
 
   const reducer = (state: number, action: { type: string }) => {
     console.log("🟨 ParentWrapper: reducer ran, state:", state, "action:", action.type);
@@ -68,20 +67,20 @@ export default function ParentWrapper({ children }: ParentWrapperProps) {
   console.log("🟨 ParentWrapper: render");
 
   return (
-    <div ref={ref} className="p-4 border-2 border-yellow-500 rounded-lg bg-yellow-50 mt-4">
+    <div ref={(el) => { console.log("🟨 ParentWrapper: ref callback ran, element:", el); ref.current = el; }} className="p-4 border-2 border-yellow-500 rounded-lg bg-yellow-50 mt-4">
       <h3 className="text-lg font-bold text-yellow-700 mb-2">ParentWrapper</h3>
       <p className="text-sm text-yellow-600 mb-2">Count: {count}</p>
       <p className="text-sm text-yellow-600 mb-2">Memoized: {memoizedValue}</p>
       <p className="text-sm text-yellow-600 mb-2">Reducer State: {reducerState}</p>
       <div className="flex gap-2 mb-2">
         <button
-          onClick={() => setCount(count + 1)}
+          onClick={() => { console.log("🟨 ParentWrapper: onClick (Increment Count) triggered"); setCount(count + 1); }}
           className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
         >
           Increment Count
         </button>
         <button
-          onClick={() => dispatch({ type: "increment" })}
+          onClick={() => { console.log("🟨 ParentWrapper: onClick (Increment Reducer) triggered"); dispatch({ type: "increment" }); }}
           className="px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700"
         >
           Increment Reducer

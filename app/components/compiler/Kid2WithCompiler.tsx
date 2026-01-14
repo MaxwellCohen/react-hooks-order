@@ -9,7 +9,6 @@ export default function Kid2WithCompiler() {
   });
 
   const ref = useRef<HTMLDivElement>(null);
-  console.log("🟧 Kid2 (Compiler): useRef ran");
 
   const reducer = (state: number, action: { type: string }) => {
     console.log("🟧 Kid2 (Compiler): reducer ran, state:", state, "action:", action.type);
@@ -70,7 +69,7 @@ export default function Kid2WithCompiler() {
   console.log("🟧 Kid2 (Compiler): render");
 
   return (
-    <div ref={ref} className="p-4 border-2 border-orange-500 rounded-lg bg-orange-50 flex-1">
+    <div ref={(el) => { console.log("🟧 Kid2 (Compiler): ref callback ran, element:", el); ref.current = el; }} className="p-4 border-2 border-orange-500 rounded-lg bg-orange-50 flex-1">
       <h4 className="text-md font-bold text-orange-700 mb-2">Kid2 (Compiler)</h4>
       <p className="text-sm text-orange-600 mb-2">Count: {count}</p>
       <p className="text-sm text-orange-600 mb-2">Memoized: {memoizedValue}</p>
@@ -78,19 +77,19 @@ export default function Kid2WithCompiler() {
       <p className="text-sm text-orange-600 mb-2">Context Value: {contextValue}</p>
       <div className="flex gap-2 mb-2">
         <button
-          onClick={() => setCount(count + 1)}
+          onClick={() => { console.log("🟧 Kid2 (Compiler): onClick (Increment Count) triggered"); setCount(count + 1); }}
           className="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600"
         >
           Increment Count
         </button>
         <button
-          onClick={() => dispatch({ type: "increment" })}
+          onClick={() => { console.log("🟧 Kid2 (Compiler): onClick (Increment Reducer) triggered"); dispatch({ type: "increment" }); }}
           className="px-3 py-1 bg-orange-600 text-white rounded hover:bg-orange-700"
         >
           Increment Reducer
         </button>
         <button
-          onClick={() => setContextValue(contextValue + 1)}
+          onClick={() => { console.log("🟧 Kid2 (Compiler): onClick (Increment Context) triggered"); setContextValue(contextValue + 1); }}
           className="px-3 py-1 bg-orange-700 text-white rounded hover:bg-orange-800"
         >
           Increment Context

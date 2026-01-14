@@ -15,7 +15,6 @@ const Kid = forwardRef<KidHandle>((props, ref) => {
   });
 
   const internalRef = useRef<HTMLDivElement>(null);
-  console.log("🟩 Kid: useRef ran");
 
   useImperativeHandle(ref, () => {
     console.log("🟩 Kid: useImperativeHandle ran");
@@ -76,20 +75,20 @@ const Kid = forwardRef<KidHandle>((props, ref) => {
   console.log("🟩 Kid: render");
 
   return (
-    <div ref={internalRef} className="p-4 border-2 border-green-500 rounded-lg bg-green-50 flex-1">
+    <div ref={(el) => { console.log("🟩 Kid: ref callback ran, element:", el); internalRef.current = el; }} className="p-4 border-2 border-green-500 rounded-lg bg-green-50 flex-1">
       <h4 className="text-md font-bold text-green-700 mb-2">Kid</h4>
       <p className="text-sm text-green-600 mb-2">Count: {count}</p>
       <p className="text-sm text-green-600 mb-2">Memoized: {memoizedValue}</p>
       <p className="text-sm text-green-600 mb-2">Reducer State: {reducerState}</p>
       <div className="flex gap-2 mb-2">
         <button
-          onClick={() => setCount(count + 1)}
+          onClick={() => { console.log("🟩 Kid: onClick (Increment Count) triggered"); setCount(count + 1); }}
           className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
         >
           Increment Count
         </button>
         <button
-          onClick={() => dispatch({ type: "increment" })}
+          onClick={() => { console.log("🟩 Kid: onClick (Increment Reducer) triggered"); dispatch({ type: "increment" }); }}
           className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
         >
           Increment Reducer
