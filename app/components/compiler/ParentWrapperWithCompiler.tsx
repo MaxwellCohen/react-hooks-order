@@ -91,7 +91,7 @@ export default function ParentWrapperWithCompiler({ children }: ParentWrapperPro
           Increment Reducer
         </button>
       </div>
-      <div className="mt-4 flex gap-4">
+      <div className="mt-4 flex flex-wrap gap-4">
         {children}
       </div>
     </div>

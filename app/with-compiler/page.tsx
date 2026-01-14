@@ -1,10 +1,11 @@
 import ParentWithCompiler from "@/app/components/compiler/ParentWithCompiler";
+import ConsoleLogViewer from "@/app/components/ConsoleLogViewer";
 import Link from "next/link";
 
 export default function WithCompilerPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-5xl flex-col items-start py-32 px-16 bg-white dark:bg-black">
+      <main className="flex min-h-screen w-full flex-col items-start p-16 bg-white dark:bg-black">
         <div className="mb-8 w-full">
           <Link
             href="/"
@@ -21,6 +22,7 @@ export default function WithCompilerPage() {
         </div>
         <ParentWithCompiler />
       </main>
+      <ConsoleLogViewer />
     </div>
   );
 }

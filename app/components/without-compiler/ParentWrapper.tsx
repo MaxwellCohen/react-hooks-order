@@ -78,7 +78,7 @@ export default function ParentWrapper({ children }: ParentWrapperProps) {
       <p className="text-sm text-yellow-600 mb-2">Count: {count}</p>
       <p className="text-sm text-yellow-600 mb-2">Memoized: {memoizedValue}</p>
       <p className="text-sm text-yellow-600 mb-2">Reducer State: {reducerState}</p>
-      <div className="flex gap-2 mb-2">
+      <div className="flex flex-wrap gap-2 mb-2">
         <button
           onClick={handleIncrementCount}
           className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
