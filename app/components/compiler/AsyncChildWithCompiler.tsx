@@ -96,7 +96,7 @@ export default function AsyncChildWithCompiler() {
   console.log("🟨 AsyncChild (Compiler): render");
   
   return (
-    <div ref={(el) => { console.log("🟨 AsyncChild (Compiler): ref callback ran, element:", el); ref.current = el; }} className="p-4 border border-blue-300 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+    <div ref={(el) => { console.log("🟨 AsyncChild (Compiler): ref callback ran, element:", el); ref.current = el; }} className="p-4 border border-blue-300 rounded-lg bg-blue-50/50 dark:bg-blue-900/10">
       <h3 className="text-lg font-semibold mb-2 text-blue-950">
         AsyncChild Component (Compiler)
       </h3>
