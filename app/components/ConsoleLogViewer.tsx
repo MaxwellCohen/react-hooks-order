@@ -1,8 +1,24 @@
 "use client";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { consoleInterceptor, type LogEntry } from "./consoleInterceptor";
+import { consoleInterceptor, type LogEntry, type HookType } from "./consoleInterceptor";
 
 type LogLevel = LogEntry["level"];
+
+const ALL_HOOK_TYPES: HookType[] = [
+  "useState",
+  "useReducer",
+  "useMemo",
+  "useCallback",
+  "useEffect",
+  "useLayoutEffect",
+  "useTransition",
+  "useOptimistic",
+  "useContext",
+  "useRef",
+  "ref-callback",
+  "render",
+  "other",
+];
 
 export default function ConsoleLogViewer() {
   const logs = useSyncExternalStore(
@@ -12,17 +28,17 @@ export default function ConsoleLogViewer() {
   );
   const [isOpen, setIsOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [enabledLevels, setEnabledLevels] = useState<Set<LogLevel>>(
-    new Set(["log", "warn", "error", "info", "debug"])
+  const [enabledHookTypes, setEnabledHookTypes] = useState<Set<HookType>>(
+    new Set(ALL_HOOK_TYPES)
   );
   const [showFilters, setShowFilters] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const shouldAutoScrollRef = useRef(true);
 
-  // Filter logs based on search text and enabled levels
+  // Filter logs based on search text and hook types
   const filteredLogs = logs.filter((log) => {
-    // Filter by level
-    if (!enabledLevels.has(log.level)) {
+    // Filter by hook type
+    if (log.hookType && !enabledHookTypes.has(log.hookType)) {
       return false;
     }
 
@@ -31,7 +47,7 @@ export default function ConsoleLogViewer() {
       const searchLower = searchText.toLowerCase();
       return (
         log.formatted.toLowerCase().includes(searchLower) ||
-        log.level.toLowerCase().includes(searchLower)
+        (log.hookType && log.hookType.toLowerCase().includes(searchLower))
       );
     }
 
@@ -101,24 +117,24 @@ export default function ConsoleLogViewer() {
     });
   };
 
-  const toggleLevel = (level: LogLevel) => {
-    setEnabledLevels((prev) => {
+  const toggleHookType = (hookType: HookType) => {
+    setEnabledHookTypes((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(level)) {
-        newSet.delete(level);
+      if (newSet.has(hookType)) {
+        newSet.delete(hookType);
       } else {
-        newSet.add(level);
+        newSet.add(hookType);
       }
       return newSet;
     });
   };
 
-  const selectAllLevels = () => {
-    setEnabledLevels(new Set(["log", "warn", "error", "info", "debug"]));
+  const selectAllHookTypes = () => {
+    setEnabledHookTypes(new Set(ALL_HOOK_TYPES));
   };
 
-  const deselectAllLevels = () => {
-    setEnabledLevels(new Set());
+  const deselectAllHookTypes = () => {
+    setEnabledHookTypes(new Set());
   };
 
   if (!isOpen) {
@@ -187,21 +203,21 @@ export default function ConsoleLogViewer() {
             />
           </div>
 
-          {/* Log Level Filters */}
+          {/* Hook Type Filters */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
-                Log Levels
+                Hook Types
               </label>
               <div className="flex gap-1">
                 <button
-                  onClick={selectAllLevels}
+                  onClick={selectAllHookTypes}
                   className="text-[10px] px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                 >
                   All
                 </button>
                 <button
-                  onClick={deselectAllLevels}
+                  onClick={deselectAllHookTypes}
                   className="text-[10px] px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                 >
                   None
@@ -209,26 +225,22 @@ export default function ConsoleLogViewer() {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              {(["log", "warn", "error", "info", "debug"] as LogLevel[]).map(
-                (level) => (
-                  <label
-                    key={level}
-                    className="flex items-center gap-1.5 cursor-pointer text-xs"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={enabledLevels.has(level)}
-                      onChange={() => toggleLevel(level)}
-                      className="w-3 h-3 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span
-                      className={`font-medium ${getLogLevelColor(level)}`}
-                    >
-                      {level.toUpperCase()}
-                    </span>
-                  </label>
-                )
-              )}
+              {ALL_HOOK_TYPES.map((hookType) => (
+                <label
+                  key={hookType}
+                  className="flex items-center gap-1.5 cursor-pointer text-xs"
+                >
+                  <input
+                    type="checkbox"
+                    checked={enabledHookTypes.has(hookType)}
+                    onChange={() => toggleHookType(hookType)}
+                    className="w-3 h-3 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="font-medium text-gray-700 dark:text-gray-300">
+                    {hookType === "ref-callback" ? "ref callback" : hookType}
+                  </span>
+                </label>
+              ))}
             </div>
           </div>
         </div>
@@ -236,8 +248,8 @@ export default function ConsoleLogViewer() {
 
       {/* Info banner */}
       <div className="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800 text-xs text-blue-800 dark:text-blue-300">
-        <strong>Note:</strong> Server-side console logs appear in the terminal.
-        This panel shows client-side logs only.
+        <strong>Note:</strong> This panel shows both server-side and client-side console logs.
+        Server logs are marked with a badge.
       </div>
 
       {/* Logs container */}
@@ -270,6 +282,22 @@ export default function ConsoleLogViewer() {
                 >
                   {log.level}
                 </span>
+                {log.source && (
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${
+                      log.source === "server"
+                        ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                        : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
+                    }`}
+                  >
+                    {log.source}
+                  </span>
+                )}
+                {log.hookType && log.hookType !== "other" && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded shrink-0 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">
+                    {log.hookType === "ref-callback" ? "ref" : log.hookType}
+                  </span>
+                )}
                 <span className="text-gray-500 dark:text-gray-400 text-[10px] shrink-0">
                   {formatTime(log.timestamp)}
                 </span>

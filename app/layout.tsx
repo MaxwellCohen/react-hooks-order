@@ -3,6 +3,14 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import ConsoleInterceptorInit from "@/app/components/ConsoleInterceptorInit";
+import ServerLogsInjector from "@/app/components/ServerLogsInjector";
+// Import console interceptor on server to start capturing server logs
+import { consoleInterceptor } from "@/app/components/consoleInterceptor";
+
+// Clear server logs at the start of each request to prevent cross-request contamination
+if (typeof window === "undefined") {
+  consoleInterceptor.clearServerLogs();
+}
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,6 +49,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
+        <ServerLogsInjector />
         <ConsoleInterceptorInit />
         {children}
       </body>
