@@ -8,6 +8,7 @@ This project showcases the precise order in which React hooks execute during:
 - **Render Phase**: When components render and hooks are called
 - **Layout Phase**: When `useLayoutEffect` hooks run (synchronously after DOM mutations)
 - **Effect Phase**: When `useEffect` hooks run (asynchronously after paint)
+- **Suspense Phase**: How async components suspend and resume rendering
 
 The app includes two versions:
 - **Without React Compiler**: Standard React behavior
@@ -28,6 +29,8 @@ The app features a built-in **Console Log Viewer** that intercepts and displays 
 - 🌓 Dark mode support
 
 Click the **"Show Console"** button in the bottom-left corner to open the log viewer.
+
+**Server-Side Logs**: The app includes a `ServerLogsInjector` component that captures logs generated on the server (during SSR) and injects them into the client, ensuring you see the complete picture of execution from server to client.
 
 ## Server vs Client Execution
 
@@ -68,13 +71,16 @@ All components that use hooks are marked with `"use client"` and run in the **br
   - `Kid.tsx` - Child component with hooks
   - `Kid2.tsx` - Sibling component with hooks
   - `Grandkid.tsx` - Grandchild component with hooks
-  - `AsyncChildDynamic.tsx` - Async component using the `use` hook
+  - `AsyncChild.tsx` - Async component using `use(Promise)` and standard hooks
+  - `AsyncChildDynamic.tsx` - Dynamically imported async component
+  - `AsyncChildLoading.tsx` - Loading fallback for Suspense
 
 - **`app/components/compiler/*`**: All components with compiler
   - Same structure as above, but with React Compiler optimizations
 
 - **`app/components/ConsoleLogViewer.tsx`**: Interactive console log viewer UI
 - **`app/components/consoleInterceptor.ts`**: Console interception and log storage
+- **`app/components/ServerLogsInjector.tsx`**: Transfers server logs to client
 
 ### What Runs on Server vs Client for "use client" Components
 
@@ -134,6 +140,9 @@ sequenceDiagram
     
     Browser->>Client: Hydrate Grandkid
     Client->>Client: ✅ All hooks execute (render phase)
+
+    Browser->>Client: Hydrate AsyncChild (Suspense)
+    Client->>Client: ✅ use(Promise) suspends or resolves
     
     Note over Browser,Client: Layout & Effect phases (client-side only)
     
@@ -206,7 +215,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Component Hierarchy
 
-The app demonstrates hooks execution across a nested component tree:
+The app demonstrates hooks execution across a nested component tree, including async components:
 
 ```
 AppContextProvider
@@ -214,6 +223,8 @@ AppContextProvider
     └── ParentWrapper
         ├── Kid
         │   └── Grandkid
+        ├── AsyncChild (Suspense)
+        ├── AsyncChildDynamic
         └── Kid2
 ```
 
@@ -226,6 +237,8 @@ graph TD
     A[AppContextProvider] --> B[Parent]
     B --> C[ParentWrapper]
     C --> D[Kid]
+    C --> AC[AsyncChild]
+    C --> ACD[AsyncChildDynamic]
     C --> E[Kid2]
     D --> F[Grandkid]
     
@@ -233,6 +246,8 @@ graph TD
     style B fill:#dbeafe
     style C fill:#fef3c7
     style D fill:#d1fae5
+    style AC fill:#fce7f3
+    style ACD fill:#fce7f3
     style E fill:#fed7aa
     style F fill:#e9d5ff
 ```
@@ -248,6 +263,7 @@ sequenceDiagram
     participant PW as ParentWrapper
     participant K as Kid
     participant G as Grandkid
+    participant AC_C as AsyncChild
     participant K2 as Kid2
     
     Note over AC,G: Render Phase - Hooks Execute Top to Bottom
@@ -292,7 +308,13 @@ sequenceDiagram
     G->>G: useContext
     G->>G: render
     
-    Note over K2: After Grandkid completes...
+    Note over AC_C: After Kid branch completes...
+    
+    PW->>AC_C: render AsyncChild
+    AC_C->>AC_C: use(Promise) -> Suspends/Resumes
+    AC_C->>AC_C: useState, useReducer, etc.
+    
+    Note over K2: After AsyncChild completes...
     
     PW->>K2: render Kid2
     K2->>K2: useState initializer
@@ -340,83 +362,28 @@ After the render phase completes, effects run in a **bottom-up** order (children
 sequenceDiagram
     participant G as Grandkid
     participant K as Kid
+    participant AC_C as AsyncChild
     participant K2 as Kid2
     participant PW as ParentWrapper
     participant P as Parent
     
     Note over G,P: Layout Phase - useLayoutEffect (Synchronous)
     
-    G->>G: useLayoutEffect cleanup (if re-render)
-    G->>G: useLayoutEffect (no deps)
-    G->>G: useLayoutEffect cleanup (mount)
-    G->>G: useLayoutEffect (mount)
-    G->>G: useLayoutEffect cleanup (deps)
-    G->>G: useLayoutEffect (deps)
-    
-    K->>K: useLayoutEffect cleanup (if re-render)
-    K->>K: useLayoutEffect (no deps)
-    K->>K: useLayoutEffect cleanup (mount)
-    K->>K: useLayoutEffect (mount)
-    K->>K: useLayoutEffect cleanup (deps)
-    K->>K: useLayoutEffect (deps)
-    
-    K2->>K2: useLayoutEffect cleanup (if re-render)
-    K2->>K2: useLayoutEffect (no deps)
-    K2->>K2: useLayoutEffect cleanup (mount)
-    K2->>K2: useLayoutEffect (mount)
-    K2->>K2: useLayoutEffect cleanup (deps)
-    K2->>K2: useLayoutEffect (deps)
-    
-    PW->>PW: useLayoutEffect cleanup (if re-render)
-    PW->>PW: useLayoutEffect (no deps)
-    PW->>PW: useLayoutEffect cleanup (mount)
-    PW->>PW: useLayoutEffect (mount)
-    PW->>PW: useLayoutEffect cleanup (deps)
-    PW->>PW: useLayoutEffect (deps)
-    
-    P->>P: useLayoutEffect cleanup (if re-render)
-    P->>P: useLayoutEffect (no deps)
-    P->>P: useLayoutEffect cleanup (mount)
-    P->>P: useLayoutEffect (mount)
-    P->>P: useLayoutEffect cleanup (deps)
-    P->>P: useLayoutEffect (deps)
+    G->>G: useLayoutEffect (bottom-up)
+    K->>K: useLayoutEffect (bottom-up)
+    AC_C->>AC_C: useLayoutEffect (bottom-up)
+    K2->>K2: useLayoutEffect (bottom-up)
+    PW->>PW: useLayoutEffect (bottom-up)
+    P->>P: useLayoutEffect (bottom-up)
     
     Note over G,P: Effect Phase - useEffect (Asynchronous, after paint)
     
-    G->>G: useEffect cleanup (if re-render)
-    G->>G: useEffect (no deps)
-    G->>G: useEffect cleanup (mount)
-    G->>G: useEffect (mount)
-    G->>G: useEffect cleanup (deps)
-    G->>G: useEffect (deps)
-    
-    K->>K: useEffect cleanup (if re-render)
-    K->>K: useEffect (no deps)
-    K->>K: useEffect cleanup (mount)
-    K->>K: useEffect (mount)
-    K->>K: useEffect cleanup (deps)
-    K->>K: useEffect (deps)
-    
-    K2->>K2: useEffect cleanup (if re-render)
-    K2->>K2: useEffect (no deps)
-    K2->>K2: useEffect cleanup (mount)
-    K2->>K2: useEffect (mount)
-    K2->>K2: useEffect cleanup (deps)
-    K2->>K2: useEffect (deps)
-    
-    PW->>PW: useEffect cleanup (if re-render)
-    PW->>PW: useEffect (no deps)
-    PW->>PW: useEffect cleanup (mount)
-    PW->>PW: useEffect (mount)
-    PW->>PW: useEffect cleanup (deps)
-    PW->>PW: useEffect (deps)
-    
-    P->>P: useEffect cleanup (if re-render)
-    P->>P: useEffect (no deps)
-    P->>P: useEffect cleanup (mount)
-    P->>P: useEffect (mount)
-    P->>P: useEffect cleanup (deps)
-    P->>P: useEffect (deps)
+    G->>G: useEffect (bottom-up)
+    K->>K: useEffect (bottom-up)
+    AC_C->>AC_C: useEffect (bottom-up)
+    K2->>K2: useEffect (bottom-up)
+    PW->>PW: useEffect (bottom-up)
+    P->>P: useEffect (bottom-up)
 ```
 
 ### Complete Render Cycle Flow
@@ -430,13 +397,15 @@ flowchart TD
     P1 --> PW1[ParentWrapper hooks]
     PW1 --> K1[Kid hooks]
     K1 --> G1[Grandkid hooks]
-    G1 --> K21[Kid2 hooks]
+    G1 --> AC1_Hook[AsyncChild hooks]
+    AC1_Hook --> K21[Kid2 hooks]
     
     K21 --> LayoutPhase[Layout Phase<br/>useLayoutEffect]
     
     LayoutPhase --> G2[Grandkid useLayoutEffects]
     G2 --> K2[Kid useLayoutEffects]
-    K2 --> K22[Kid2 useLayoutEffects]
+    K2 --> AC2[AsyncChild useLayoutEffects]
+    AC2 --> K22[Kid2 useLayoutEffects]
     K22 --> PW2[ParentWrapper useLayoutEffects]
     PW2 --> P2[Parent useLayoutEffects]
     
@@ -445,7 +414,8 @@ flowchart TD
     
     EffectPhase --> G3[Grandkid useEffects]
     G3 --> K3[Kid useEffects]
-    K3 --> K23[Kid2 useEffects]
+    K3 --> AC3[AsyncChild useEffects]
+    AC3 --> K23[Kid2 useEffects]
     K23 --> PW3[ParentWrapper useEffects]
     PW3 --> P3[Parent useEffects]
     
@@ -475,6 +445,12 @@ flowchart TD
 - Executes in **bottom-up** order (children first, then parents)
 - Cleanup functions run before new effects
 - Multiple effects with different dependency arrays run in declaration order
+
+### Async Components & Suspense (React 19)
+- **`use(Promise)`**: Pauses execution of the component until the promise resolves
+- **Suspense**: Shows a fallback UI (`AsyncChildLoading`) while the async component is suspended
+- **Resume**: When promise resolves, component re-renders and hooks proceed
+- **Hooks in Async Components**: Can use standard hooks after the `use` call, but they only run once the component successfully renders
 
 ### Hook Execution Rules
 
@@ -529,7 +505,9 @@ app/
 │   │   ├── KidWithCompiler.tsx
 │   │   ├── Kid2WithCompiler.tsx
 │   │   ├── GrandkidWithCompiler.tsx
-│   │   └── AsyncChildDynamicWithCompiler.tsx
+│   │   ├── AsyncChildWithCompiler.tsx
+│   │   ├── AsyncChildDynamicWithCompiler.tsx
+│   │   └── AsyncChildLoadingWithCompiler.tsx
 │   ├── without-compiler/            # Components without React Compiler
 │   │   ├── AppContext.tsx
 │   │   ├── Parent.tsx
@@ -537,10 +515,13 @@ app/
 │   │   ├── Kid.tsx
 │   │   ├── Kid2.tsx
 │   │   ├── Grandkid.tsx
-│   │   └── AsyncChildDynamic.tsx
+│   │   ├── AsyncChild.tsx
+│   │   ├── AsyncChildDynamic.tsx
+│   │   └── AsyncChildLoading.tsx
 │   ├── ConsoleLogViewer.tsx         # Interactive console log viewer UI
 │   ├── consoleInterceptor.ts        # Console interception and log storage
-│   └── ConsoleInterceptorInit.tsx   # Console interceptor initialization
+│   ├── ConsoleInterceptorInit.tsx   # Console interceptor initialization
+│   └── ServerLogsInjector.tsx       # Injects server-side logs into client
 ├── with-compiler/
 │   └── page.tsx
 ├── without-compiler/
