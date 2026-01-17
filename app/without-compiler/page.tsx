@@ -24,9 +24,6 @@ export default function WithoutCompilerPage() {
           <h1 className="text-3xl font-semibold mb-2 text-black dark:text-zinc-50">
             React Hooks Execution Order (Without Compiler)
           </h1>
-          <p className="text-lg mb-4 text-zinc-600 dark:text-zinc-400">
-            Check the browser console to see the order of hook execution.
-          </p>
         </div>
         <Parent />
       </main>
